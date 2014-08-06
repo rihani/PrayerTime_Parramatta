@@ -69,10 +69,6 @@ import java.util.logging.Level;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
-import static javafx.application.Application.launch;
-import static javafx.application.Application.launch;
-import static javafx.application.Application.launch;
-import static javafx.application.Application.launch;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -94,7 +90,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.RowConstraintsBuilder;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -908,7 +903,7 @@ import org.joda.time.format.DateTimeFormatter;
                             isha_jamaat_cal.add(Calendar.MINUTE, -5);
 
                             
-//==============Prayer time change notification logic + 7days
+//==============Prayer time change notification logic + 5days
 // check excel file in documentation folder for a flow chart                            
                             
                             // check if a notification has already been sent, to avoid flooding users with notifications, i.e during a system restart
@@ -955,11 +950,11 @@ import org.joda.time.format.DateTimeFormatter;
                                 try
                                 {
                                         c = DBConnect.connect();
-                                        SQL = "select * from paramatta_prayertimes where DATE(date) = DATE(NOW() ) + INTERVAL 7 DAY ";
+                                        SQL = "select * from paramatta_prayertimes where DATE(date) = DATE(NOW() ) + INTERVAL 5 DAY ";
                                         rs = c.createStatement().executeQuery(SQL);
                                         while (rs.next()) 
                                         {
-                                            future_prayer_date =       rs.getDate("date");
+                                            future_prayer_date =            rs.getDate("date");
                                             future_fajr_jamaat_time =       rs.getTime("fajr_jamaat");
                                             future_asr_jamaat_time =        rs.getTime("asr_jamaat");
                                             future_isha_jamaat_time =       rs.getTime("isha_jamaat");             
