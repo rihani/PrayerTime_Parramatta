@@ -196,7 +196,7 @@ import org.joda.time.format.DateTimeFormatter;
     private String ar_notification_Msg_Lines[], en_notification_Msg_Lines[], notification_Msg, facebook_moon_notification_Msg;    
     private String fajr_jamaat ,zuhr_jamaat ,asr_jamaat ,maghrib_jamaat ,isha_jamaat ;
     private String labeconv;
-    private String friday_jamaat, future_zuhr_jamaat_time;
+    private String friday_jamaat,friday2_jamaat, future_zuhr_jamaat_time;
     private String future_fajr_jamaat ,future_zuhr_jamaat ,future_asr_jamaat ,future_maghrib_jamaat ,future_isha_jamaat ;
     private String en_message_String, ar_message_String; 
     private String facebook_post, facebook_post_visibility, facebook_hadith, facebook_Fan_Count, facebook_Post_Url,old_facebook_Post_Url;
@@ -237,12 +237,13 @@ import org.joda.time.format.DateTimeFormatter;
     
     private Label fajr_hourLeft, fajr_hourRight, fajr_minLeft, fajr_minRight, fajr_jamma_hourLeft, fajr_jamma_hourRight, fajr_jamma_minLeft, fajr_jamma_minRight, footer_Label, like_Label;
     private Label sunrise_hourLeft, sunrise_hourRight, sunrise_minLeft, sunrise_minRight;
-    private Label time_Separator1, time_Separator2, time_Separator3, time_Separator4, time_Separator5, time_Separator6,time_Separator8, time_jamma_Separator1, time_jamma_Separator2, time_jamma_Separator3, time_jamma_Separator4 ,time_jamma_Separator5; 
+    private Label time_Separator1, time_Separator2, time_Separator3, time_Separator4, time_Separator5, time_Separator6,time_Separator8,time_Separator9,  time_jamma_Separator1, time_jamma_Separator2, time_jamma_Separator3, time_jamma_Separator4 ,time_jamma_Separator5; 
     private Label zuhr_hourLeft, zuhr_hourRight, zuhr_minLeft, zuhr_minRight, zuhr_jamma_hourLeft, zuhr_jamma_hourRight, zuhr_jamma_minLeft, zuhr_jamma_minRight;
     private Label asr_hourLeft, asr_hourRight, asr_minLeft, asr_minRight, asr_jamma_hourLeft, asr_jamma_hourRight, asr_jamma_minLeft, asr_jamma_minRight;
     private Label maghrib_hourLeft, maghrib_hourRight, maghrib_minLeft, maghrib_minRight, maghrib_jamma_hourLeft, maghrib_jamma_hourRight, maghrib_jamma_minLeft, maghrib_jamma_minRight;
     private Label isha_hourLeft, isha_hourRight, isha_minLeft, isha_minRight, isha_jamma_hourLeft, isha_jamma_hourRight, isha_jamma_minLeft, isha_jamma_minRight;
     private Label friday_hourLeft, friday_hourRight, friday_minLeft, friday_minRight;
+    private Label friday2_hourLeft, friday2_hourRight, friday2_minLeft, friday2_minRight;
     private Label Phase_Label, Moon_Date_Label, Moon_Image_Label, friday_Label_eng,friday_Label_ar,sunrise_Label_ar,sunrise_Label_eng, fajr_Label_ar, fajr_Label_eng, zuhr_Label_ar, zuhr_Label_eng, asr_Label_ar, asr_Label_eng, maghrib_Label_ar, maghrib_Label_eng, isha_Label_ar, isha_Label_eng, jamaat_Label_eng,jamaat_Label_ar, athan_Label_eng,athan_Label_ar, hadith_Label, announcement_Label,athan_Change_Label_L1, athan_Change_Label_L2, hour_Label, minute_Label, date_Label, divider1_Label, divider2_Label, ar_moon_hadith_Label_L1, ar_moon_hadith_Label_L2, en_moon_hadith_Label_L1, en_moon_hadith_Label_L2, facebook_Label;
     
     private List<String> images;
@@ -310,7 +311,7 @@ import org.joda.time.format.DateTimeFormatter;
 
  
         
-        logger.info("Starting application....");
+        logger.info("Starting application...Bissmillah.");
         
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() 
         {            
@@ -360,7 +361,7 @@ import org.joda.time.format.DateTimeFormatter;
                 c.close();
                 System.out.format("Prayertime server running on %s platform\n", platform);
                 System.out.format(" Face Book Notification Enabled: %s \n Face Book Receive posts: %s \n Facebook page ID: %s \n Latitude: %s \n Longitude: %s \n Time Zone: %s \n Calculation Method: %s  \n Asr Juristic: %s \n", facebook_notification_enable, facebook_Receive, page_ID, latitude, longitude, timezone,calcMethod, AsrJuristic );
-                System.out.format("Device Name is:%s at %s \n", device_name, device_location);
+                System.out.format("This Device Name is:%s at %s \n", device_name, device_location);
                 System.out.format("Time Zone ID is:%s \n", timeZone_ID);
             }
         catch (Exception e){logger.warn("Unexpected error", e);}
@@ -553,6 +554,11 @@ import org.joda.time.format.DateTimeFormatter;
         time_Separator8 = new Label();
         friday_minLeft = new Label();
         friday_minRight = new Label();
+        friday2_hourLeft = new Label();
+        friday2_hourRight = new Label();
+        time_Separator9 = new Label();
+        friday2_minLeft = new Label();
+        friday2_minRight = new Label();
         facebook_Label = new Label();
         
     
@@ -762,8 +768,8 @@ import org.joda.time.format.DateTimeFormatter;
                         System.out.println(" isha time " + isha_begins_time);
                         
 //                        set friday prayer here
-                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){friday_jamaat = "01:30";}
-                        else{friday_jamaat = "12:30";}
+                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){friday_jamaat = "12:45"; friday2_jamaat = "XX:XX";}
+                        else{friday_jamaat = "12:45"; friday2_jamaat = "XX:XX";}
            
                         update_prayer_labels = true;
                         getFacebook = true;
@@ -3313,6 +3319,11 @@ public void update_labels() throws Exception{
             friday_minLeft.setText(friday_jamaat.substring(3, 4));
             friday_minRight.setText(friday_jamaat.substring(4, 5));
              
+            friday2_hourLeft.setText(friday2_jamaat.substring(0, 1));
+            friday2_hourRight.setText(friday2_jamaat.substring(1, 2));
+            friday2_minLeft.setText(friday2_jamaat.substring(3, 4));
+            friday2_minRight.setText(friday2_jamaat.substring(4, 5));
+            
             time_jamma_Separator1.setText(":");
             time_jamma_Separator2.setText(":");
             time_jamma_Separator3.setText(":");
@@ -3836,13 +3847,13 @@ public void update_labels() throws Exception{
         friday_minLeft.setId("hourLeft");
         friday_minRight.setId("hourLeft");
         fridayBox.getChildren().addAll(friday_hourLeft, friday_hourRight, time_Separator8, friday_minLeft, friday_minRight);
-        prayertime_pane.setConstraints(fridayBox, 1, 13);
+        prayertime_pane.setConstraints(fridayBox, 1, 12);
         prayertime_pane.getChildren().add(fridayBox);
         
         
-        prayertime_pane.setConstraints(friday_Label_eng, 2, 13);
+        prayertime_pane.setConstraints(friday_Label_eng, 2, 12);
         prayertime_pane.getChildren().add(friday_Label_eng);
-        prayertime_pane.setConstraints(friday_Label_ar, 2, 13);
+        prayertime_pane.setConstraints(friday_Label_ar, 2, 12);
         prayertime_pane.getChildren().add(friday_Label_ar);
         
         friday_hourLeft.setText("-");
@@ -3878,8 +3889,8 @@ public void update_labels() throws Exception{
         
         final Separator sepHor5 = new Separator();
         prayertime_pane.setValignment(sepHor5,VPos.CENTER);
-        prayertime_pane.setConstraints(sepHor5, 1, 12);
-        prayertime_pane.setColumnSpan(sepHor5, 2);
+        prayertime_pane.setConstraints(sepHor5, 0, 11);
+        prayertime_pane.setColumnSpan(sepHor5, 3);
         prayertime_pane.getChildren().add(sepHor5);
         
 //        final Separator sepHor6 = new Separator();
@@ -3987,6 +3998,31 @@ public void update_labels() throws Exception{
         isha_jamma_minRight.setText("-");
         time_jamma_Separator5.setText(":");
 
+//============================= 
+
+        HBox fridayBox2 = new HBox();
+        fridayBox2.setSpacing(0);
+        fridayBox2.setMaxSize(180,60);
+        fridayBox2.setMinSize(180,60);
+        fridayBox2.setPrefSize(180,60);
+        friday2_hourLeft.setId("hourLeft");
+        friday2_hourRight.setId("hourLeft");
+        time_Separator9.setId("hourLeft");
+        friday2_minLeft.setId("hourLeft");
+        friday2_minRight.setId("hourLeft");
+        fridayBox2.getChildren().addAll(friday2_hourLeft, friday2_hourRight, time_Separator9, friday2_minLeft, friday2_minRight);
+        prayertime_pane.setConstraints(fridayBox2, 0, 12);
+        prayertime_pane.getChildren().add(fridayBox2);
+        
+       
+        
+        friday2_hourLeft.setText("-");
+        friday2_hourRight.setText("-");
+        friday2_minLeft.setText("-");
+        friday2_minRight.setText("-");
+        time_Separator9.setText(":");
+        
+        
     return prayertime_pane;
 }
     
