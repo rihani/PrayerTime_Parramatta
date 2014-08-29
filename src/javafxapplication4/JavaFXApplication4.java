@@ -66,7 +66,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
+import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.application.Platform;
@@ -96,6 +98,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javax.imageio.ImageIO;
 import me.shanked.nicatronTg.jPushover.Pushover;
 import org.apache.log4j.Logger;
@@ -191,7 +194,11 @@ import org.joda.time.format.DateTimeFormatter;
     private boolean isha_prayer_In_Progress_notification = false;
     private boolean count_down = false;
     private boolean count_down_disable  = false;
-            
+    private boolean friday_label1_4 = true;
+    private boolean friday_label2_4 = false;
+    private boolean friday_label3_4 = false;
+    private boolean friday_label4_4 = false;
+    
     private String hadith, translated_hadith, ar_full_moon_hadith, en_full_moon_hadith, ar_moon_notification, en_moon_notification, announcement, en_notification_Msg, ar_notification_Msg, device_name, device_location;
     private String ar_notification_Msg_Lines[], en_notification_Msg_Lines[], notification_Msg, facebook_moon_notification_Msg;    
     private String fajr_jamaat ,zuhr_jamaat ,asr_jamaat ,maghrib_jamaat ,isha_jamaat ;
@@ -245,6 +252,7 @@ import org.joda.time.format.DateTimeFormatter;
     private Label friday_hourLeft, friday_hourRight, friday_minLeft, friday_minRight;
     private Label friday2_hourLeft, friday2_hourRight, friday2_minLeft, friday2_minRight;
     private Label Phase_Label, Moon_Date_Label, Moon_Image_Label, friday_Label_eng,friday_Label_ar,sunrise_Label_ar,sunrise_Label_eng, fajr_Label_ar, fajr_Label_eng, zuhr_Label_ar, zuhr_Label_eng, asr_Label_ar, asr_Label_eng, maghrib_Label_ar, maghrib_Label_eng, isha_Label_ar, isha_Label_eng, jamaat_Label_eng,jamaat_Label_ar, athan_Label_eng,athan_Label_ar, hadith_Label, announcement_Label,athan_Change_Label_L1, athan_Change_Label_L2, hour_Label, minute_Label, date_Label, divider1_Label, divider2_Label, ar_moon_hadith_Label_L1, ar_moon_hadith_Label_L2, en_moon_hadith_Label_L1, en_moon_hadith_Label_L2, facebook_Label;
+    HBox fridayBox2 = new HBox();
     
     private List<String> images;
     private File directory;
@@ -255,14 +263,14 @@ import org.joda.time.format.DateTimeFormatter;
     int dayofweek_int;
     
     
-    private long moonPhase_lastTimerCall,translate_lastTimerCall, clock_update_lastTimerCall ,sensor_lastTimerCall, debug_lastTimerCall, proximity_lastTimerCall;
+    private long moonPhase_lastTimerCall,translate_lastTimerCall, clock_update_lastTimerCall , friday_update_lastTimerCall, sensor_lastTimerCall, debug_lastTimerCall, proximity_lastTimerCall;
     public long delay_turnOnTV_after_Prayers = 135000000000L; // 2.25 minute
 //    public long delay_turnOnTV_after_Prayers = 60000000000L; // 1 minute
     public long delay_turnOnTV_after_Prayers_nightmode = 420000000000L; // 7 minutes
     
     public long delay_turnOffTV_after_inactivity = 1500000000000L; // 25minutes
 //    public long delay_turnOffTV_after_inactivity = 280000000000L; // 1minutes
-    private AnimationTimer moonPhase_timer, translate_timer, clock_update_timer ,debug_timer ;
+    private AnimationTimer moonPhase_timer, translate_timer, clock_update_timer , friday_update_timer, debug_timer ;
         
     DateFormat dateFormat = new SimpleDateFormat("hh:mm");
     
@@ -457,6 +465,7 @@ import org.joda.time.format.DateTimeFormatter;
         
         data = FXCollections.observableArrayList();
         Mainpane = new GridPane();
+        
         
         footer_Label = new Label();
         like_Label = new Label();
@@ -768,8 +777,8 @@ import org.joda.time.format.DateTimeFormatter;
                         System.out.println(" isha time " + isha_begins_time);
                         
 //                        set friday prayer here
-                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){friday_jamaat = "12:45"; friday2_jamaat = "XX:XX";}
-                        else{friday_jamaat = "12:45"; friday2_jamaat = "XX:XX";}
+                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){friday_jamaat = "12:45"; friday2_jamaat = "01:30";}
+                        else{friday_jamaat = "12:45"; friday2_jamaat = "01:30";}
            
                         update_prayer_labels = true;
                         getFacebook = true;
@@ -1600,7 +1609,22 @@ import org.joda.time.format.DateTimeFormatter;
                     clock_update_lastTimerCall = now;
                 }
             }
-        };       
+        };      
+        
+        
+// Timer to change friday prayer label====================================================
+        
+//        translate_lastTimerCall = System.nanoTime();
+        friday_update_timer = new AnimationTimer() {
+            @Override public void handle(long now) {
+                if (now > friday_update_lastTimerCall + 3000_000_000l) 
+                {
+                    try {update_friday_label();} 
+                    catch (Exception e) {logger.warn("Unexpected error", e);}
+                    friday_update_lastTimerCall = now;
+                }
+            }
+        };   
 
 // PIR sensor thread to turn on/Off TV screen to save energy ===============================================================        
         new Thread(() -> 
@@ -1870,6 +1894,24 @@ import org.joda.time.format.DateTimeFormatter;
 
                             try {Process process = processBuilder_Athan.start();} 
                             catch (IOException e) {logger.warn("Unexpected error", e);}
+                        }
+                        
+                        
+                        if(received.equals("ping")) 
+                        {
+                            DatagramSocket send_datagramSocket = new DatagramSocket();
+                            InetAddress hostAddress = InetAddress.getByName("localhost");
+
+                            
+                            
+                            String outString = "pong" ;
+                            byte[] send_buffer = outString.getBytes();
+      
+                            InetAddress receiverAddress = InetAddress.getLocalHost();
+
+                            DatagramPacket send_packet = new DatagramPacket(send_buffer, send_buffer.length, hostAddress, 9999);
+                            send_datagramSocket.send(packet);
+                            
                         }
                         
                         if(received.equals("snapshot")) 
@@ -2144,7 +2186,7 @@ import org.joda.time.format.DateTimeFormatter;
         prayertime_pane.setEffect(ds);
         hadithPane.setEffect(ds);
         clockPane.setEffect(ds);
-        footerPane.setEffect(ds);
+//        footerPane.setEffect(ds);
   //============================================
         Mainpane.add(clockPane, 1, 1);
         Mainpane.add(Moonpane, 7, 1);
@@ -2152,13 +2194,14 @@ import org.joda.time.format.DateTimeFormatter;
         Mainpane.add(hadithPane, 1, 15,11,13);
         prayertime_pane.setTranslateY(30);
 //        hadithPane.setTranslateY(0);
-        Mainpane.add(footerPane, 1, 20,11,1);
-        footerPane.setTranslateY(514);
+//        Mainpane.add(footerPane, 1, 20,11,1);
+//        footerPane.setTranslateY(514);
 //        Mainpane.setCache(true);
         scene.setRoot(Mainpane);
         stage.show();
         translate_timer.start(); 
         clock_update_timer.start();
+        friday_update_timer.start();
         
 //        For debuuging purposes only
 //                new Thread()
@@ -2191,6 +2234,106 @@ public static void main(String[] args) {
     System.exit(0);
 }
 
+
+
+public void update_friday_label() throws Exception{
+    
+    
+        FadeTransition fin = new FadeTransition(Duration.millis(2500), fridayBox2);
+                                    fin.setFromValue(0.3);
+                                    fin.setToValue(1);
+//                                    ft.setCycleCount(Animation..INDEFINITE);
+                                    fin.setAutoReverse(true);
+//                                    fin.play();
+        
+        FadeTransition fout = new FadeTransition(Duration.millis(2500), fridayBox2);
+                                    fout.setFromValue(1);
+                                    fout.setToValue(0.3);
+//                                    ft.setCycleCount(Animation..INDEFINITE);
+                                    fout.setAutoReverse(true);
+//                                    ft1.play();                           
+                                    
+                                    
+            if (friday_label1_4)
+            {
+                
+                fin.play();
+                friday_label1_4 = false;
+                friday_label2_4 = true;
+                friday_label3_4 = false;
+                friday_label4_4 = false;
+                friday2_hourLeft.setText(friday_jamaat.substring(0, 1));
+                friday2_hourRight.setText(friday_jamaat.substring(1, 2));
+                time_Separator9.setText(":");
+                time_Separator9.setStyle("-fx-font-size:45;");
+                friday2_minLeft.setText(friday_jamaat.substring(3, 4));
+                friday2_minRight.setText(friday_jamaat.substring(4, 5));
+//                friday2_hourLeft.setVisible(true);
+//                friday2_hourRight.setVisible(true);
+//                friday2_minLeft.setVisible(true);
+//                friday2_minRight.setVisible(true);
+//                fout.play();
+            }
+            
+            
+            else if (friday_label2_4)
+            {
+                friday_label1_4 = false;
+                friday_label2_4 = false;
+                friday_label3_4 = true;
+                friday_label4_4 = false;
+//                friday2_hourLeft.setVisible(false);
+//                friday2_hourRight.setVisible(false);
+//                time_Separator9.setText("&");
+//                time_Separator9.setStyle("-fx-font-size:30;");
+//                friday2_minLeft.setVisible(false);
+//                friday2_minRight.setVisible(false);
+                    fout.play();
+//            fin.play();
+            }
+             
+            
+            else if (friday_label3_4)
+            {
+                fin.play();
+                friday_label1_4 = false;
+                friday_label2_4 = false;
+                friday_label3_4 = false;
+                friday_label4_4 = true;
+                friday2_hourLeft.setText(friday2_jamaat.substring(0, 1));
+                friday2_hourRight.setText(friday2_jamaat.substring(1, 2));
+                time_Separator9.setText(":");
+                time_Separator9.setStyle("-fx-font-size:45;");
+                friday2_minLeft.setText(friday2_jamaat.substring(3, 4));
+                friday2_minRight.setText(friday2_jamaat.substring(4, 5));
+//                friday2_hourLeft.setVisible(true);
+//                friday2_hourRight.setVisible(true);
+//                friday2_minLeft.setVisible(true);
+//                friday2_minRight.setVisible(true);
+                
+            
+            }
+            
+                    
+            else if (friday_label4_4)
+            {
+            
+                friday_label1_4 = true;
+                friday_label2_4 = false;
+                friday_label3_4 = false;
+                friday_label4_4 = false;
+//                friday2_hourLeft.setVisible(false);
+//                friday2_hourRight.setVisible(false);
+//                time_Separator9.setText("&");
+//                time_Separator9.setStyle("-fx-font-size:30;");
+//                friday2_minLeft.setVisible(false);
+//                friday2_minRight.setVisible(false);
+                fout.play();
+//            fin.play();
+            }
+
+}
+        
 public void update_clock() throws Exception{  
     
     
@@ -3314,15 +3457,15 @@ public void update_labels() throws Exception{
             isha_jamma_minLeft.setText(formattedDateTime.substring(3, 4));
             isha_jamma_minRight.setText(formattedDateTime.substring(4, 5));
             
-            friday_hourLeft.setText(friday_jamaat.substring(0, 1));
-            friday_hourRight.setText(friday_jamaat.substring(1, 2));
-            friday_minLeft.setText(friday_jamaat.substring(3, 4));
-            friday_minRight.setText(friday_jamaat.substring(4, 5));
-             
-            friday2_hourLeft.setText(friday2_jamaat.substring(0, 1));
-            friday2_hourRight.setText(friday2_jamaat.substring(1, 2));
-            friday2_minLeft.setText(friday2_jamaat.substring(3, 4));
-            friday2_minRight.setText(friday2_jamaat.substring(4, 5));
+//            friday_hourLeft.setText(friday_jamaat.substring(0, 1));
+//            friday_hourRight.setText(friday_jamaat.substring(1, 2));
+//            friday_minLeft.setText(friday_jamaat.substring(3, 4));
+//            friday_minRight.setText(friday_jamaat.substring(4, 5));
+//             
+//            friday2_hourLeft.setText(friday2_jamaat.substring(0, 1));
+//            friday2_hourRight.setText(friday2_jamaat.substring(1, 2));
+//            friday2_minLeft.setText(friday2_jamaat.substring(3, 4));
+//            friday2_minRight.setText(friday2_jamaat.substring(4, 5));
             
             time_jamma_Separator1.setText(":");
             time_jamma_Separator2.setText(":");
@@ -3836,31 +3979,31 @@ public void update_labels() throws Exception{
                       
 //=============================  
          
-        HBox fridayBox = new HBox();
-        fridayBox.setSpacing(0);
-        fridayBox.setMaxSize(180,60);
-        fridayBox.setMinSize(180,60);
-        fridayBox.setPrefSize(180,60);
-        friday_hourLeft.setId("hourLeft");
-        friday_hourRight.setId("hourLeft");
-        time_Separator8.setId("hourLeft");
-        friday_minLeft.setId("hourLeft");
-        friday_minRight.setId("hourLeft");
-        fridayBox.getChildren().addAll(friday_hourLeft, friday_hourRight, time_Separator8, friday_minLeft, friday_minRight);
-        prayertime_pane.setConstraints(fridayBox, 1, 12);
-        prayertime_pane.getChildren().add(fridayBox);
-        
+//        HBox fridayBox = new HBox();
+//        fridayBox.setSpacing(0);
+//        fridayBox.setMaxSize(180,60);
+//        fridayBox.setMinSize(180,60);
+//        fridayBox.setPrefSize(180,60);
+//        friday_hourLeft.setId("hourLeft");
+//        friday_hourRight.setId("hourLeft");
+//        time_Separator8.setId("hourLeft");
+//        friday_minLeft.setId("hourLeft");
+//        friday_minRight.setId("hourLeft");
+//        fridayBox.getChildren().addAll(friday_hourLeft, friday_hourRight, time_Separator8, friday_minLeft, friday_minRight);
+//        prayertime_pane.setConstraints(fridayBox, 1, 12);
+//        prayertime_pane.getChildren().add(fridayBox);
+//        
         
         prayertime_pane.setConstraints(friday_Label_eng, 2, 12);
         prayertime_pane.getChildren().add(friday_Label_eng);
         prayertime_pane.setConstraints(friday_Label_ar, 2, 12);
         prayertime_pane.getChildren().add(friday_Label_ar);
         
-        friday_hourLeft.setText("-");
-        friday_hourRight.setText("-");
-        friday_minLeft.setText("-");
-        friday_minRight.setText("-");
-        time_Separator8.setText(":");
+//        friday_hourLeft.setText("-");
+//        friday_hourRight.setText("-");
+//        friday_minLeft.setText("-");
+//        friday_minRight.setText("-");
+//        time_Separator8.setText(":");
  //============================= 
         
         final Separator sepHor1 = new Separator();
@@ -4000,7 +4143,7 @@ public void update_labels() throws Exception{
 
 //============================= 
 
-        HBox fridayBox2 = new HBox();
+//        fridayBox2 = new HBox();
         fridayBox2.setSpacing(0);
         fridayBox2.setMaxSize(180,60);
         fridayBox2.setMinSize(180,60);
