@@ -175,6 +175,7 @@ import org.joda.time.format.DateTimeFormatter;
     private boolean  notification_Sent;
     private boolean  facebook_Receive = false;
     private boolean  facebook_notification_enable = false;
+    private boolean  internet_able = true;
     private boolean  pir_sensor;
     private boolean  pir_disactive_startup = true;
     private boolean arabic = true;
@@ -347,7 +348,8 @@ import org.joda.time.format.DateTimeFormatter;
                 {
                     id =                            rs.getInt("id");
                     platform =                      rs.getString("platform");
-                    facebook_notification_enable =  rs.getBoolean("facebook_notification_enable");  
+                    facebook_notification_enable =  rs.getBoolean("facebook_notification_enable");
+                    internet_able                =  rs.getBoolean("internet_able");
                     facebook_Receive             =  rs.getBoolean("facebook_Receive"); 
                     latitude =                      rs.getDouble("latitude");
                     longitude =                     rs.getDouble("longitude");
@@ -368,7 +370,8 @@ import org.joda.time.format.DateTimeFormatter;
                 }
                 c.close();
                 System.out.format("Prayertime server running on %s platform\n", platform);
-                System.out.format(" Face Book Notification Enabled: %s \n Face Book Receive posts: %s \n Facebook page ID: %s \n Latitude: %s \n Longitude: %s \n Time Zone: %s \n Calculation Method: %s  \n Asr Juristic: %s \n", facebook_notification_enable, facebook_Receive, page_ID, latitude, longitude, timezone,calcMethod, AsrJuristic );
+                System.out.format(" Face Book Notification Enabled: %s \n Device is internet able: %s \n Face Book Receive posts: %s \n Facebook page ID: %s \n Latitude: %s \n Longitude: %s \n Time Zone: %s \n Calculation Method: %s  \n Asr Juristic: %s \n", facebook_notification_enable, internet_able, facebook_Receive, page_ID, latitude, longitude, timezone,calcMethod, AsrJuristic );
+                
                 System.out.format("This Device Name is:%s at %s \n", device_name, device_location);
                 System.out.format("Time Zone ID is:%s \n", timeZone_ID);
             }
@@ -385,12 +388,16 @@ import org.joda.time.format.DateTimeFormatter;
         
 // Pushover ==========================================================================        
         
-        //https://github.com/nicatronTg/jPushover
-        Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
-        String temp_msg = device_name + " at "+ device_location + " is starting";
-        try {p.sendMessage(temp_msg);} catch (IOException e){e.printStackTrace();}
+        //https://github.com/nicatronTg/jPushover\
         
+//        
+            Pushover p = new Pushover("WHq3q48zEFpTqU47Wxygr3VMqoodxc", "skhELgtWRXslAUrYx9yp1s0Os89JTF");
+            String temp_msg = device_name + " at "+ device_location + " is starting";
+            try { if (internet_able) {p.sendMessage(temp_msg);}} 
+//            catch (IOException e){e.printStackTrace();}
+            catch(Exception e){System.err.println("Sending failed. " + e.getMessage());}
         
+//        }
 //        test
 //        try 
 //                                            {
@@ -407,7 +414,8 @@ import org.joda.time.format.DateTimeFormatter;
         //change on osx
         if (platform.equals("osx"))
 //        {directory = new File("/Users/ossama/Projects/Pi/javafx/prayertime/background/");} 
-        {directory = new File("/Users/samia/NetBeansProjects/prayertime_files/background/");}
+        {directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background");}
+//        {directory = new File("/Users/samia/NetBeansProjects/prayertime_files/background/");}
         //change on Pi
         if (platform.equals("pi"))
         {directory = new File("/home/pi/prayertime/Images/");}
@@ -422,20 +430,22 @@ import org.joda.time.format.DateTimeFormatter;
         imageNumber = (int) (Math.random() * countImages);
         rand_Image_Path = directory + "/"+ images.get(imageNumber);
         System.out.println(rand_Image_Path);
-
-        try
+        
+        if (!platform.equals("osx"))
         {
-            broadcast_msg = "Prayer Time Server Starting";
-            socket1 = new DatagramSocket(null);
-            socket1.setBroadcast(true);
-            buf1 = broadcast_msg.getBytes();
-            group = InetAddress.getByName("255.255.255.255");
-            packet1 = new DatagramPacket(buf1, buf1.length, group, 8888);
-            socket1.send(packet1);
-        
+            try
+            {
+                broadcast_msg = "Prayer Time Server Starting";
+                socket1 = new DatagramSocket(null);
+                socket1.setBroadcast(true);
+                buf1 = broadcast_msg.getBytes();
+                group = InetAddress.getByName("255.255.255.255");
+                packet1 = new DatagramPacket(buf1, buf1.length, group, 8888);
+                socket1.send(packet1);
+
+            }
+            catch(Exception e){System.err.println("Sending failed. " + e.getMessage());}
         }
-        catch(Exception e){System.err.println("Sending failed. " + e.getMessage());}
-        
         
         
         
@@ -1336,7 +1346,7 @@ import org.joda.time.format.DateTimeFormatter;
                         if (isStarting){isStarting = false;}
 
 // Get Facebook Latest Post =================================================================================
-                        if (getFacebook && facebook_Receive)
+                        if (getFacebook && facebook_Receive && internet_able)
                         {
                             getFacebook = false;
                             facebook_Text_Post = false;
@@ -1496,7 +1506,7 @@ import org.joda.time.format.DateTimeFormatter;
                                 else if (dtIslamic.getMonthOfYear()==9 && dtIslamic.getDayOfMonth()>28){SQL ="select hadith, translated_hadith from hadith WHERE translated_hadith LIKE '%fitr %' and length(translated_hadith)<"+ max_en_hadith_len + " and length(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
                                 else if (dtIslamic.getMonthOfYear()==10 && dtIslamic.getDayOfMonth()==1){SQL ="select hadith, translated_hadith from hadith WHERE translated_hadith LIKE '%fitr %' and length(translated_hadith)<"+ max_en_hadith_len + " and length(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
                                 //SELECT * FROM hadith WHERE translated_hadith LIKE '%fitr %'
-                                else if(dtIslamic.getMonthOfYear()==12){SQL ="select hadith, translated_hadith from hadith WHERE topic = 'Hajj (Pilgrimage)' and length(translated_hadith)<"+ max_en_hadith_len + " and length(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                                else if(dtIslamic.getMonthOfYear()==12 && dtIslamic.getDayOfMonth()<13){SQL ="select hadith, translated_hadith from hadith WHERE topic = 'Hajj (Pilgrimage)' and length(translated_hadith)<"+ max_en_hadith_len + " and length(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
                                 else if (dayofweek_int == 6){SQL = "select hadith, translated_hadith from hadith WHERE day = '5' and length(translated_hadith)<"+ max_en_hadith_len + " and length(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
                                 else 
                                 {
@@ -1615,16 +1625,16 @@ import org.joda.time.format.DateTimeFormatter;
 // Timer to change friday prayer label====================================================
         
 //        translate_lastTimerCall = System.nanoTime();
-        friday_update_timer = new AnimationTimer() {
-            @Override public void handle(long now) {
-                if (now > friday_update_lastTimerCall + 3000_000_000l) 
-                {
-                    try {update_friday_label();} 
-                    catch (Exception e) {logger.warn("Unexpected error", e);}
-                    friday_update_lastTimerCall = now;
-                }
-            }
-        };   
+//        friday_update_timer = new AnimationTimer() {
+//            @Override public void handle(long now) {
+//                if (now > friday_update_lastTimerCall + 1500_000_000l) 
+//                {
+//                    try {update_friday_label();} 
+//                    catch (Exception e) {logger.warn("Unexpected error", e);}
+//                    friday_update_lastTimerCall = now;
+//                }
+//            }
+//        };   
 
 // PIR sensor thread to turn on/Off TV screen to save energy ===============================================================        
         new Thread(() -> 
@@ -1934,7 +1944,7 @@ import org.joda.time.format.DateTimeFormatter;
                         
                         if(received.equals("refresh facebook")) 
                         {
-                            if (facebook_Receive)
+                            if (facebook_Receive && internet_able)
                             {
                                 getFacebook = false;
                                 facebook_Text_Post = false;
@@ -2201,7 +2211,7 @@ import org.joda.time.format.DateTimeFormatter;
         stage.show();
         translate_timer.start(); 
         clock_update_timer.start();
-        friday_update_timer.start();
+//        friday_update_timer.start();
         
 //        For debuuging purposes only
 //                new Thread()
@@ -2236,103 +2246,103 @@ public static void main(String[] args) {
 
 
 
-public void update_friday_label() throws Exception{
-    
-    
-        FadeTransition fin = new FadeTransition(Duration.millis(2500), fridayBox2);
-                                    fin.setFromValue(0.3);
-                                    fin.setToValue(1);
-//                                    ft.setCycleCount(Animation..INDEFINITE);
-                                    fin.setAutoReverse(true);
-//                                    fin.play();
-        
-        FadeTransition fout = new FadeTransition(Duration.millis(2500), fridayBox2);
-                                    fout.setFromValue(1);
-                                    fout.setToValue(0.3);
-//                                    ft.setCycleCount(Animation..INDEFINITE);
-                                    fout.setAutoReverse(true);
-//                                    ft1.play();                           
-                                    
-                                    
-            if (friday_label1_4)
-            {
-                
-                fin.play();
-                friday_label1_4 = false;
-                friday_label2_4 = true;
-                friday_label3_4 = false;
-                friday_label4_4 = false;
-                friday2_hourLeft.setText(friday_jamaat.substring(0, 1));
-                friday2_hourRight.setText(friday_jamaat.substring(1, 2));
-                time_Separator9.setText(":");
-                time_Separator9.setStyle("-fx-font-size:45;");
-                friday2_minLeft.setText(friday_jamaat.substring(3, 4));
-                friday2_minRight.setText(friday_jamaat.substring(4, 5));
-//                friday2_hourLeft.setVisible(true);
-//                friday2_hourRight.setVisible(true);
-//                friday2_minLeft.setVisible(true);
-//                friday2_minRight.setVisible(true);
-//                fout.play();
-            }
-            
-            
-            else if (friday_label2_4)
-            {
-                friday_label1_4 = false;
-                friday_label2_4 = false;
-                friday_label3_4 = true;
-                friday_label4_4 = false;
-//                friday2_hourLeft.setVisible(false);
-//                friday2_hourRight.setVisible(false);
-//                time_Separator9.setText("&");
-//                time_Separator9.setStyle("-fx-font-size:30;");
-//                friday2_minLeft.setVisible(false);
-//                friday2_minRight.setVisible(false);
-                    fout.play();
-//            fin.play();
-            }
-             
-            
-            else if (friday_label3_4)
-            {
-                fin.play();
-                friday_label1_4 = false;
-                friday_label2_4 = false;
-                friday_label3_4 = false;
-                friday_label4_4 = true;
-                friday2_hourLeft.setText(friday2_jamaat.substring(0, 1));
-                friday2_hourRight.setText(friday2_jamaat.substring(1, 2));
-                time_Separator9.setText(":");
-                time_Separator9.setStyle("-fx-font-size:45;");
-                friday2_minLeft.setText(friday2_jamaat.substring(3, 4));
-                friday2_minRight.setText(friday2_jamaat.substring(4, 5));
-//                friday2_hourLeft.setVisible(true);
-//                friday2_hourRight.setVisible(true);
-//                friday2_minLeft.setVisible(true);
-//                friday2_minRight.setVisible(true);
-                
-            
-            }
-            
-                    
-            else if (friday_label4_4)
-            {
-            
-                friday_label1_4 = true;
-                friday_label2_4 = false;
-                friday_label3_4 = false;
-                friday_label4_4 = false;
-//                friday2_hourLeft.setVisible(false);
-//                friday2_hourRight.setVisible(false);
-//                time_Separator9.setText("&");
-//                time_Separator9.setStyle("-fx-font-size:30;");
-//                friday2_minLeft.setVisible(false);
-//                friday2_minRight.setVisible(false);
-                fout.play();
-//            fin.play();
-            }
-
-}
+//public void update_friday_label() throws Exception{
+//    
+//    
+//        FadeTransition fin = new FadeTransition(Duration.millis(2500), fridayBox2);
+//                                    fin.setFromValue(0.3);
+//                                    fin.setToValue(1);
+////                                    ft.setCycleCount(Animation..INDEFINITE);
+//                                    fin.setAutoReverse(true);
+////                                    fin.play();
+//        
+//        FadeTransition fout = new FadeTransition(Duration.millis(2500), fridayBox2);
+//                                    fout.setFromValue(1);
+//                                    fout.setToValue(0.3);
+////                                    ft.setCycleCount(Animation..INDEFINITE);
+//                                    fout.setAutoReverse(true);
+////                                    ft1.play();                           
+//                                    
+//                                    
+//            if (friday_label1_4)
+//            {
+//                
+////                fin.play();
+//                friday_label1_4 = false;
+//                friday_label2_4 = true;
+//                friday_label3_4 = false;
+//                friday_label4_4 = false;
+//                friday2_hourLeft.setText(friday_jamaat.substring(0, 1));
+//                friday2_hourRight.setText(friday_jamaat.substring(1, 2));
+//                time_Separator9.setText(":");
+//                time_Separator9.setStyle("-fx-font-size:45;");
+//                friday2_minLeft.setText(friday_jamaat.substring(3, 4));
+//                friday2_minRight.setText(friday_jamaat.substring(4, 5));
+////                friday2_hourLeft.setVisible(true);
+////                friday2_hourRight.setVisible(true);
+////                friday2_minLeft.setVisible(true);
+////                friday2_minRight.setVisible(true);
+////                fout.play();
+//            }
+//            
+//            
+//            else if (friday_label2_4)
+//            {
+//                friday_label1_4 = false;
+//                friday_label2_4 = false;
+//                friday_label3_4 = true;
+//                friday_label4_4 = false;
+////                friday2_hourLeft.setVisible(false);
+////                friday2_hourRight.setVisible(false);
+////                time_Separator9.setText("&");
+////                time_Separator9.setStyle("-fx-font-size:30;");
+////                friday2_minLeft.setVisible(false);
+////                friday2_minRight.setVisible(false);
+////                    fout.play();
+////            fin.play();
+//            }
+//             
+//            
+//            else if (friday_label3_4)
+//            {
+////                fin.play();
+//                friday_label1_4 = false;
+//                friday_label2_4 = false;
+//                friday_label3_4 = false;
+//                friday_label4_4 = true;
+//                friday2_hourLeft.setText(friday2_jamaat.substring(0, 1));
+//                friday2_hourRight.setText(friday2_jamaat.substring(1, 2));
+//                time_Separator9.setText(":");
+//                time_Separator9.setStyle("-fx-font-size:45;");
+//                friday2_minLeft.setText(friday2_jamaat.substring(3, 4));
+//                friday2_minRight.setText(friday2_jamaat.substring(4, 5));
+////                friday2_hourLeft.setVisible(true);
+////                friday2_hourRight.setVisible(true);
+////                friday2_minLeft.setVisible(true);
+////                friday2_minRight.setVisible(true);
+//                
+//            
+//            }
+//            
+//                    
+//            else if (friday_label4_4)
+//            {
+//            
+//                friday_label1_4 = true;
+//                friday_label2_4 = false;
+//                friday_label3_4 = false;
+//                friday_label4_4 = false;
+////                friday2_hourLeft.setVisible(false);
+////                friday2_hourRight.setVisible(false);
+////                time_Separator9.setText("&");
+////                time_Separator9.setStyle("-fx-font-size:30;");
+////                friday2_minLeft.setVisible(false);
+////                friday2_minRight.setVisible(false);
+////                fout.play();
+////            fin.play();
+//            }
+//
+//}
         
 public void update_clock() throws Exception{  
     
@@ -3457,15 +3467,15 @@ public void update_labels() throws Exception{
             isha_jamma_minLeft.setText(formattedDateTime.substring(3, 4));
             isha_jamma_minRight.setText(formattedDateTime.substring(4, 5));
             
-//            friday_hourLeft.setText(friday_jamaat.substring(0, 1));
-//            friday_hourRight.setText(friday_jamaat.substring(1, 2));
-//            friday_minLeft.setText(friday_jamaat.substring(3, 4));
-//            friday_minRight.setText(friday_jamaat.substring(4, 5));
-//             
-//            friday2_hourLeft.setText(friday2_jamaat.substring(0, 1));
-//            friday2_hourRight.setText(friday2_jamaat.substring(1, 2));
-//            friday2_minLeft.setText(friday2_jamaat.substring(3, 4));
-//            friday2_minRight.setText(friday2_jamaat.substring(4, 5));
+            friday_hourLeft.setText(friday_jamaat.substring(0, 1));
+            friday_hourRight.setText(friday_jamaat.substring(1, 2));
+            friday_minLeft.setText(friday_jamaat.substring(3, 4));
+            friday_minRight.setText(friday_jamaat.substring(4, 5));
+             
+            friday2_hourLeft.setText(friday2_jamaat.substring(0, 1));
+            friday2_hourRight.setText(friday2_jamaat.substring(1, 2));
+            friday2_minLeft.setText(friday2_jamaat.substring(3, 4));
+            friday2_minRight.setText(friday2_jamaat.substring(4, 5));
             
             time_jamma_Separator1.setText(":");
             time_jamma_Separator2.setText(":");
@@ -3979,19 +3989,19 @@ public void update_labels() throws Exception{
                       
 //=============================  
          
-//        HBox fridayBox = new HBox();
-//        fridayBox.setSpacing(0);
-//        fridayBox.setMaxSize(180,60);
-//        fridayBox.setMinSize(180,60);
-//        fridayBox.setPrefSize(180,60);
-//        friday_hourLeft.setId("hourLeft");
-//        friday_hourRight.setId("hourLeft");
-//        time_Separator8.setId("hourLeft");
-//        friday_minLeft.setId("hourLeft");
-//        friday_minRight.setId("hourLeft");
-//        fridayBox.getChildren().addAll(friday_hourLeft, friday_hourRight, time_Separator8, friday_minLeft, friday_minRight);
-//        prayertime_pane.setConstraints(fridayBox, 1, 12);
-//        prayertime_pane.getChildren().add(fridayBox);
+        HBox fridayBox = new HBox();
+        fridayBox.setSpacing(0);
+        fridayBox.setMaxSize(180,60);
+        fridayBox.setMinSize(180,60);
+        fridayBox.setPrefSize(180,60);
+        friday_hourLeft.setId("hourLeft");
+        friday_hourRight.setId("hourLeft");
+        time_Separator8.setId("hourLeft");
+        friday_minLeft.setId("hourLeft");
+        friday_minRight.setId("hourLeft");
+        fridayBox.getChildren().addAll(friday_hourLeft, friday_hourRight, time_Separator8, friday_minLeft, friday_minRight);
+        prayertime_pane.setConstraints(fridayBox, 1, 12);
+        prayertime_pane.getChildren().add(fridayBox);
 //        
         
         prayertime_pane.setConstraints(friday_Label_eng, 2, 12);
@@ -3999,11 +4009,11 @@ public void update_labels() throws Exception{
         prayertime_pane.setConstraints(friday_Label_ar, 2, 12);
         prayertime_pane.getChildren().add(friday_Label_ar);
         
-//        friday_hourLeft.setText("-");
-//        friday_hourRight.setText("-");
-//        friday_minLeft.setText("-");
-//        friday_minRight.setText("-");
-//        time_Separator8.setText(":");
+        friday_hourLeft.setText("-");
+        friday_hourRight.setText("-");
+        friday_minLeft.setText("-");
+        friday_minRight.setText("-");
+        time_Separator8.setText(":");
  //============================= 
         
         final Separator sepHor1 = new Separator();
