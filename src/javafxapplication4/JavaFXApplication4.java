@@ -8,7 +8,7 @@
 sudo cp  SimpleAstronomyLib-0.1.0.jar  /opt/jdk1.8.0/jre/lib/ext
 sudo service samba restart
 
-
+test 2
 26/11/13 from windows XP: Uncomment Lines 227, 214 - 221, 891 - 892 to work on raspberry pi
 
 */
@@ -1508,6 +1508,11 @@ import org.joda.time.format.DateTimeFormatter;
                                 //SELECT * FROM hadith WHERE translated_hadith LIKE '%fitr %'
                                 else if(dtIslamic.getMonthOfYear()==12 && dtIslamic.getDayOfMonth()<13){SQL ="select hadith, translated_hadith from hadith WHERE topic = 'Hajj (Pilgrimage)' and length(translated_hadith)<"+ max_en_hadith_len + " and length(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
                                 else if (dayofweek_int == 6){SQL = "select hadith, translated_hadith from hadith WHERE day = '5' and length(translated_hadith)<"+ max_en_hadith_len + " and length(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+                                
+                                else if (dtIslamic.getMonthOfYear()==1 && dtIslamic.getDayOfMonth()>7 && dtIslamic.getDayOfMonth()<12 ){SQL = "select hadith, translated_hadith from hadith WHERE (translated_hadith LIKE '%Ashura%') and length(translated_hadith)<"+ max_en_hadith_len + " and length(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";}
+
+                                
+                                
                                 else 
                                 {
                                     SQL = "select * from hadith WHERE day = '0' and length(translated_hadith)<"+ max_en_hadith_len + " and length(hadith)<" + max_ar_hadith_len + " ORDER BY RAND( ) LIMIT 1";
