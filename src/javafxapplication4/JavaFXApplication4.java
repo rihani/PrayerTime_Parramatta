@@ -13,7 +13,7 @@ test 2
 
 */
 
-
+//TODO hello2
 
 package javafxapplication4;
 import com.bradsbrain.simpleastronomy.MoonPhaseFinder;
@@ -803,7 +803,10 @@ import org.joda.time.format.DateTimeFormatter;
 
                         tzSAUDI_ARABIA = DateTimeZone.forID("Asia/Riyadh");
                         dtIslamic = DateTime_now.withChronology(IslamicChronology.getInstance(tzSAUDI_ARABIA, IslamicChronology.LEAP_YEAR_15_BASED));
-                        System.out.println(dtIslamic.getMonthOfYear());
+                        System.out.print("Arabic Date:  ");
+                        System.out.print(dtIslamic.getMonthOfYear());
+                        System.out.print("/");
+                        System.out.println(dtIslamic.getDayOfMonth());
 
                         if (dtIslamic.getMonthOfYear()==9){System.out.println("==========Ramadan Moubarik==========");}
         
@@ -1058,7 +1061,7 @@ import org.joda.time.format.DateTimeFormatter;
                             int days_Between_Now_Fullmoon = d.getDays();
                             System.out.format("Days left to full moon: %s\n", days_Between_Now_Fullmoon );
                             
-                            if ( dtIslamic.getMonthOfYear()!=9 && days_Between_Now_Fullmoon <= 5 && days_Between_Now_Fullmoon >= 2 && dtIslamic.getMonthOfYear()!=9)
+                            if ( dtIslamic.getMonthOfYear()!=9 && days_Between_Now_Fullmoon <= 5 && days_Between_Now_Fullmoon >= 2)
                             {                                
                                 //hide hadith label boolean
                                 getHadith = false;
@@ -3791,12 +3794,12 @@ public void update_labels() throws Exception{
 //                Object objData = urlConnect.getContent();
 //
 //            } catch (UnknownHostException e) {
-//                // TODO Auto-generated catch block
+//                // Auto-generated catch block
 //                e.printStackTrace();
 //                return false;
 //            }
 //            catch (IOException e) {
-//                // TODO Auto-generated catch block
+//                // Auto-generated catch block
 //                e.printStackTrace();
 //                return false;
 //            }
