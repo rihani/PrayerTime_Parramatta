@@ -7,13 +7,22 @@
 /*
 sudo cp  SimpleAstronomyLib-0.1.0.jar  /opt/jdk1.8.0/jre/lib/ext
 sudo service samba restart
+scp -P 22 JavaFXApplication4.jar  pi@192.168.1.3:/home/pi/prayertime
+
+
+change the following files to customise:
+sudo nano /etc/ddclient.conf
+sudo nano /etc/ppp/peers/pptpconf
+sudo nano /etc/hosts
+sudo nano /etc/hostname
 
 test 2
 26/11/13 from windows XP: Uncomment Lines 227, 214 - 221, 891 - 892 to work on raspberry pi
 
 */
 
-//TODO hello2
+//TODO change vpn setting to dns instead of ip, and setup my home to ossama.org for example
+
 
 package javafxapplication4;
 import com.bradsbrain.simpleastronomy.MoonPhaseFinder;
@@ -407,7 +416,8 @@ import org.joda.time.format.DateTimeFormatter;
 //        test
 //        try 
 //                                            {
-//                                                String pageID = page_ID +"/feed";
+//                                                //String pageID = page_ID +"/feed”;
+//            										String pageID = "me/feed";
 //                                                String temporary_msg = " This is an Automated test message";
 //                                                facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", temporary_msg));
 //                                                
@@ -1061,7 +1071,9 @@ import org.joda.time.format.DateTimeFormatter;
                             else {System.out.println("Full moon is before new moon" );}
                             pir_disactive_startup = false;
                             
-// ======= Notification for full moon 5 days earlier, 2 days before fasting period
+// ======= Notification for ashura and full moon 5 days earlier, 2 days before fasting period
+
+//TODO Use moonsighting.info to get moon sighting observations
                             
                             Days d = Days.daysBetween(new DateMidnight(DateTime_now), new DateMidnight(fullMoon));
                             int days_Between_Now_Fullmoon = d.getDays();
@@ -1113,7 +1125,8 @@ import org.joda.time.format.DateTimeFormatter;
                                 {
                                     try 
                                     {
-                                        String pageID = page_ID +"/feed";
+                                        //String pageID = page_ID +"/feed”;
+                                    	String pageID = "me/feed";
                                         facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
                                         System.out.println("Full Moon Notification Sent to Facebook:" );
                                         System.out.println(facebook_moon_notification_Msg);
@@ -1180,7 +1193,8 @@ import org.joda.time.format.DateTimeFormatter;
                                     facebook_moon_notification_Msg = ar_moon_notification + "\n\n" + en_moon_notification;
 //                                    try
 //                                    {
-//                                        String pageID = page_ID +"/feed";
+//                                        //String pageID = page_ID +"/feed”;
+//                                    	String pageID = "me/feed";
 //                                        facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
 //                                    }
 //                                    catch (FacebookException e){logger.warn("Unexpected error", e);}                           
@@ -1204,7 +1218,8 @@ import org.joda.time.format.DateTimeFormatter;
                                         {
                                             try 
                                             {
-                                                String pageID = page_ID +"/feed";
+                                                //String pageID = page_ID +"/feed”;
+												String pageID = "me/feed";
                                                 facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
                                                 System.out.println("Full Moon Notification Sent to Facebook:" );
                                                 System.out.println(facebook_moon_notification_Msg);
@@ -1255,7 +1270,8 @@ import org.joda.time.format.DateTimeFormatter;
                                         {
                                             try 
                                             {
-                                                String pageID = page_ID +"/feed";
+                                                //String pageID = page_ID +"/feed”;
+                                            	String pageID = "me/feed";
                                                 facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
                                                 System.out.println("Full Moon Notification Sent to Facebook:" );
                                                 System.out.println(facebook_moon_notification_Msg);
@@ -1279,7 +1295,8 @@ import org.joda.time.format.DateTimeFormatter;
                                         {
                                             try 
                                             {
-                                                String pageID = page_ID +"/feed";
+                                                //String pageID = page_ID +"/feed”;
+                                            	String pageID = "me/feed";
                                                 facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_moon_notification_Msg));
                                                 System.out.println("Full Moon Notification Sent to Facebook:" );
                                                 System.out.println(facebook_moon_notification_Msg);
@@ -1310,7 +1327,7 @@ import org.joda.time.format.DateTimeFormatter;
                             
                         }                        
                         
-// Prayer time change notification/////////////////////put this in a thread, so error does not stop code further down ========================================================
+//TODO Prayer time change notification/////////////////////put this in a thread, so error does not stop code further down ========================================================
 // creates message to send to facebook
 // creates labels for notification
                         
@@ -1415,7 +1432,8 @@ import org.joda.time.format.DateTimeFormatter;
                             {
                                 try 
                                 {
-                                    String pageID = page_ID +"/feed";
+                                    //String pageID = page_ID +"/feed”;
+                                	String pageID = "me/feed";
                                     facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", notification_Msg));
                                 }
                                 catch (Exception e){logger.warn("Unexpected error", e);}
@@ -1644,19 +1662,26 @@ import org.joda.time.format.DateTimeFormatter;
                                         {
                                             try 
                                             {
-                                                String pageID = page_ID +"/feed";
+                                                String pageID = "me/feed";
                                                 facebookClient.publish(pageID, FacebookType.class, Parameter.with("message", facebook_hadith));
+                                                
+//                                                DefaultFacebookClient fbClient;
+//                                                fbClient = new DefaultFacebookClient(pageAccessToken);
+//                                                fbClient.publish("me/feed", FacebookType.class, Parameter.with("message", "Aloha! ;)"));
+                                                
+                                                
+                                                c = DBConnect.connect();
+                                                PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.facebook_hadith_notification (notification_date) VALUE (?)");                                      
+                                                java.sql.Timestamp mysqldate = new java.sql.Timestamp(new java.util.Date().getTime());
+                                                ps.setTimestamp(1, mysqldate);   
+                                                ps.executeUpdate(); 
+                                                c.close();
+                                                System.out.println("hadith posted to Facebook: \n" + facebook_hadith );
                                             }
                                             catch (FacebookException e){logger.warn("Unexpected error", e);} 
                                         }
 
-                                        c = DBConnect.connect();
-                                        PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.facebook_hadith_notification (notification_date) VALUE (?)");                                      
-                                        java.sql.Timestamp mysqldate = new java.sql.Timestamp(new java.util.Date().getTime());
-                                        ps.setTimestamp(1, mysqldate);   
-                                        ps.executeUpdate(); 
-                                        c.close();
-                                        System.out.println("hadith posted to Facebook: \n" + facebook_hadith );
+                                        
                                     }
                                     catch (FacebookException e){logger.warn("Unexpected error", e);} 
                                     catch (Exception e){logger.warn("Unexpected error", e);}
@@ -1752,9 +1777,16 @@ import org.joda.time.format.DateTimeFormatter;
                                 hdmiOn = true;
                                 startup = false;
                                 System.out.println("Tv turned on");
-                                try {Thread.sleep(2500);} catch (InterruptedException e) {logger.warn("Unexpected error", e);}
-                                try {Process process1 = processBuilder1.start();}
-                                catch (IOException e) {logger.warn("Unexpected error", e);} 
+                                try 
+                                        {
+                                            Thread.sleep(2500);                 
+                                            processBuilder1.start();                                      
+                                            Thread.sleep(2500); 
+                                            processBuilder1.start();
+                                        }
+                                        catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
+                                            java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
+                                        } 
 
                              }
 
@@ -1783,9 +1815,16 @@ import org.joda.time.format.DateTimeFormatter;
                                         hdmiOn = true;
                                         prayer_In_Progress = false;
                                         System.out.println("Tv turned on");
-                                        try {Thread.sleep(2500);} catch (InterruptedException e) {logger.warn("Unexpected error", e);}
-                                        try {Process process1 = processBuilder1.start();}
-                                        catch (IOException e) {logger.warn("Unexpected error", e);} 
+                                        try 
+                                        {
+                                            Thread.sleep(2500);                 
+                                            processBuilder1.start();                                      
+                                            Thread.sleep(2500); 
+                                            processBuilder1.start();
+                                        }
+                                        catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
+                                            java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
+                                        }
                                     }
                                 }
                                 
@@ -1845,8 +1884,16 @@ import org.joda.time.format.DateTimeFormatter;
                                         hdmiOn = true;
                                         prayer_In_Progress = false;
                                         System.out.println("Tv turned on");
-                                        try {Thread.sleep(2500);} catch (InterruptedException e) {logger.warn("Unexpected error", e);}
-                                        try {Process process1 = processBuilder1.start();}catch (IOException e) {logger.warn("Unexpected error", e);}    
+                                        try 
+                                        {
+                                            Thread.sleep(2500);                 
+                                            processBuilder1.start();                                      
+                                            Thread.sleep(2500); 
+                                            processBuilder1.start();
+                                        }
+                                        catch (IOException e) {logger.warn("Unexpected error", e);} catch (InterruptedException ex) { 
+                                            java.util.logging.Logger.getLogger(JavaFXApplication4.class.getName()).log(Level.SEVERE, null, ex);
+                                        }   
                                     }
                                     
                                     if(send_Broadcast_msg)
@@ -2197,6 +2244,7 @@ import org.joda.time.format.DateTimeFormatter;
         // rotate tv screen to portrait mode
         // edit the /boot/config.txt file Copy stored in documentation folder (i.e. ramebuffer_width=1080   framebuffer_height=1920  display_rotate=1...)
         scene = new Scene(root, 1080, 1920);
+//        scene = new Scene(root, 720, 1280);
         scene.getStylesheets().addAll(this.getClass().getResource("style.css").toExternalForm());
         stage.setScene(scene);
                 
