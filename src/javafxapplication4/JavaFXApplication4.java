@@ -66,6 +66,7 @@ import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -81,9 +82,13 @@ import java.util.logging.Level;
 import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
@@ -136,7 +141,11 @@ import org.joda.time.format.DateTimeFormatter;
  */
    
     public class JavaFXApplication4 extends Application {
-    
+        
+    private StringProperty       hour = new SimpleStringProperty();
+    private StringProperty       minute = new SimpleStringProperty();
+    private StringProperty       second = new SimpleStringProperty();
+    private StringProperty       date = new SimpleStringProperty();
     private final Boolean debug    = true;  //  <<========================== Debuger  
     private final Logger logger = Logger.getLogger(JavaFXApplication4.class.getName());
     private Date fullMoon= null; //  <<========================== might fix errors at startup
@@ -219,7 +228,7 @@ import org.joda.time.format.DateTimeFormatter;
     private String ar_notification_Msg_Lines[], en_notification_Msg_Lines[], notification_Msg, facebook_moon_notification_Msg;    
     private String fajr_jamaat ,zuhr_jamaat ,asr_jamaat ,maghrib_jamaat ,isha_jamaat ;
     private String labeconv;
-    private String friday_jamaat,friday2_jamaat, future_zuhr_jamaat_time;
+    private String friday_jamaat,friday2_jamaat,future_zuhr_jamaat_time;
     private String future_fajr_jamaat ,future_zuhr_jamaat ,future_asr_jamaat ,future_maghrib_jamaat ,future_isha_jamaat ;
     private String en_message_String, ar_message_String; 
     private String facebook_post, facebook_post_visibility, facebook_hadith, facebook_Fan_Count, facebook_Post_Url,old_facebook_Post_Url;
@@ -227,7 +236,7 @@ import org.joda.time.format.DateTimeFormatter;
     private String page_ID;
     String timeZone_ID ; // = timeZone_ID
     String SQL;
-    private String hour_in_hour_Label, minute_in_minute_Label, date;
+    private String hour_in_hour_Label, minute_in_minute_Label;
     private String formattedDateTime;
     
     ResultSet rs;
@@ -267,7 +276,7 @@ import org.joda.time.format.DateTimeFormatter;
     private Label isha_hourLeft, isha_hourRight, isha_minLeft, isha_minRight, isha_jamma_hourLeft, isha_jamma_hourRight, isha_jamma_minLeft, isha_jamma_minRight;
     private Label friday_hourLeft, friday_hourRight, friday_minLeft, friday_minRight;
     private Label friday2_hourLeft, friday2_hourRight, friday2_minLeft, friday2_minRight;
-    private Label Phase_Label, Moon_Date_Label, Moon_Image_Label, friday_Label_eng,friday_Label_ar,sunrise_Label_ar,sunrise_Label_eng, fajr_Label_ar, fajr_Label_eng, zuhr_Label_ar, zuhr_Label_eng, asr_Label_ar, asr_Label_eng, maghrib_Label_ar, maghrib_Label_eng, isha_Label_ar, isha_Label_eng, jamaat_Label_eng,jamaat_Label_ar, athan_Label_eng,athan_Label_ar, hadith_Label, announcement_Label,athan_Change_Label_L1, athan_Change_Label_L2, hour_Label, minute_Label, date_Label, divider1_Label, divider2_Label, ar_moon_hadith_Label_L1, ar_moon_hadith_Label_L2, en_moon_hadith_Label_L1, en_moon_hadith_Label_L2, facebook_Label;
+    private Label Phase_Label, Moon_Date_Label, Sunrise_Date_Label, Moon_Image_Label, Sunrise_Image_Label, friday_Label_eng,friday_Label_ar,sunrise_Label_ar,sunrise_Label_eng, fajr_Label_ar, fajr_Label_eng, zuhr_Label_ar, zuhr_Label_eng, asr_Label_ar, asr_Label_eng, maghrib_Label_ar, maghrib_Label_eng, isha_Label_ar, isha_Label_eng, jamaat_Label_eng,jamaat_Label_ar, athan_Label_eng,athan_Label_ar, hadith_Label, announcement_Label,athan_Change_Label_L1, athan_Change_Label_L2, hour_Label, minute_Label, date_Label,second_Label, separator_Label, divider1_Label, divider2_Label, ar_moon_hadith_Label_L1, ar_moon_hadith_Label_L2, en_moon_hadith_Label_L1, en_moon_hadith_Label_L2, facebook_Label;
     HBox fridayBox2 = new HBox();
     
     private List<String> images;
@@ -291,7 +300,7 @@ import org.joda.time.format.DateTimeFormatter;
     DateFormat dateFormat = new SimpleDateFormat("hh:mm");
     
     
-    GridPane Mainpane, Moonpane, prayertime_pane, clockPane, hadithPane;
+    GridPane Mainpane, Moonpane, Sunrisepane, prayertime_pane, clockPane, hadithPane;
     char[] arabicChars = {'٠','١','٢','٣','٤','٥','٦','٧','٨','٩'};
     static String[] suffixes =
     //    0     1     2     3     4     5     6     7     8     9
@@ -496,8 +505,10 @@ import org.joda.time.format.DateTimeFormatter;
         footer_Label = new Label();
         like_Label = new Label();
         Moon_Image_Label = new Label();
+        Sunrise_Image_Label  = new Label();
         Phase_Label = new Label();
         Moon_Date_Label = new Label();
+        Sunrise_Date_Label = new Label();
         jamaat_Label_eng = new Label();
         jamaat_Label_ar = new Label();
         athan_Label_eng = new Label();
@@ -526,7 +537,12 @@ import org.joda.time.format.DateTimeFormatter;
         athan_Change_Label_L2 = new Label();
         hour_Label = new Label();
         minute_Label = new Label();
+        second_Label = new Label();
         date_Label = new Label();
+        
+        
+        separator_Label = new Label();
+        
         divider1_Label = new Label();
         divider2_Label = new Label();
         fajr_hourLeft = new Label();
@@ -803,8 +819,8 @@ import org.joda.time.format.DateTimeFormatter;
                         System.out.println(" isha time " + isha_begins_time);
                         
 //                        set friday prayer here
-                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){friday_jamaat = "12:45"; friday2_jamaat = "01:30";}
-                        else{friday_jamaat = "12:45"; friday2_jamaat = "01:30";}
+                        if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){friday_jamaat = "12:45"; friday2_jamaat = "01:20";}
+                        else{friday_jamaat = "12:45"; friday2_jamaat = "01:20";}
            
                         update_prayer_labels = true;
                         getFacebook = true;
@@ -861,38 +877,42 @@ import org.joda.time.format.DateTimeFormatter;
                                     id =                rs.getInt("id");
                                     prayer_date =       rs.getDate("date");
                                     fajr_jamaat_time =       rs.getTime("fajr_jamaat");
+                                    zuhr_jamaat_time =       rs.getTime("zuhr_jamaat");
                                     asr_jamaat_time =        rs.getTime("asr_jamaat");
+                                    maghrib_jamaat_time =    rs.getTime("maghrib_jamaat");
                                     isha_jamaat_time =       rs.getTime("isha_jamaat");           
                                 }
                                 c.close();
                                 fajr_jamaat = fajr_jamaat_time.toString();
+                                zuhr_jamaat = zuhr_jamaat_time.toString();
                                                                 
-                                if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){zuhr_jamaat = "01:15";} 
-                                
-                                else
-                                {
-                                    
-                                    HolidayManager HOLIDAY = HolidayManager.getInstance(HolidayCalendar.AUSTRALIA);
-                                    Set<Holiday> holidays = HOLIDAY.getHolidays(2014, "NSW");
-                                    System.out.println(holidays);
-                                    System.out.println(dayofweek_int);
-                                    if (dayofweek_int == 1 || dayofweek_int == 7)
-                                    {
-                                        zuhr_jamaat = "12:15";
-                                    }
-                                    else{zuhr_jamaat = "01:15";}
-                                }
+//                                if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){zuhr_jamaat = "01:15";} 
+//                                
+//                                else
+//                                {
+//                                    
+//                                    HolidayManager HOLIDAY = HolidayManager.getInstance(HolidayCalendar.AUSTRALIA);
+//                                    Set<Holiday> holidays = HOLIDAY.getHolidays(2014, "NSW");
+//                                    System.out.println(holidays);
+//                                    System.out.println(dayofweek_int);
+//                                    if (dayofweek_int == 1 || dayofweek_int == 7)
+//                                    {
+//                                        zuhr_jamaat = "12:15";
+//                                    }
+//                                    else{zuhr_jamaat = "01:15";}
+//                                }
                                 
                                 
                                 asr_jamaat = asr_jamaat_time.toString();
+                                maghrib_jamaat = maghrib_jamaat_time.toString();
                                 isha_jamaat = isha_jamaat_time.toString();
                                 // print the results
-                                System.out.format("%s,%s,%s,%s,%s \n", id, prayer_date, fajr_jamaat, asr_jamaat, isha_jamaat );
+                                System.out.format("%s,%s,%s,%s,%s,%s,%s \n", id, prayer_date, fajr_jamaat, zuhr_jamaat, asr_jamaat, maghrib_jamaat, isha_jamaat );
                                 
                             }
                             catch (Exception e){ logger.warn("Unexpected error", e); }
                                                 
-                            
+//==============Prayer notification - setup notification timming                            
                             Date fajr_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + fajr_jamaat);
                             cal.setTime(fajr_jamaat_temp);
                             cal.add(Calendar.MINUTE, 5);
@@ -930,8 +950,21 @@ import org.joda.time.format.DateTimeFormatter;
                             asr_jamaat_cal.add(Calendar.MINUTE, -5);
 
 
-                            maghrib_jamaat_cal = (Calendar)maghrib_cal.clone();
-                            maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_adj);
+//                            maghrib_jamaat_cal = (Calendar)maghrib_cal.clone();
+//                            maghrib_jamaat_cal.add(Calendar.MINUTE, maghrib_adj);
+                            
+                            
+                            Date maghrib_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + maghrib_jamaat);
+                            cal.setTime(maghrib_jamaat_temp);
+                            cal.add(Calendar.MINUTE, 5);
+                            Date maghrib_jamaat = cal.getTime();
+                            maghrib_jamaat_update_cal = Calendar.getInstance();
+                            maghrib_jamaat_update_cal.setTime(maghrib_jamaat);
+                            maghrib_jamaat_update_cal.set(Calendar.MILLISECOND, 0);
+                            maghrib_jamaat_update_cal.set(Calendar.SECOND, 0);
+//                            System.out.println("maghrib Jamaat update scheduled at:" + maghrib_jamaat_update_cal.getTime());
+                            maghrib_jamaat_cal = (Calendar)maghrib_jamaat_update_cal.clone();
+                            maghrib_jamaat_cal.add(Calendar.MINUTE, -5);
                             
 
                             Date isha_jamaat_temp = new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(date + " " + isha_jamaat);
@@ -994,19 +1027,20 @@ import org.joda.time.format.DateTimeFormatter;
                                 try
                                 {
                                         c = DBConnect.connect();
-                                        SQL = "select * from paramatta_prayertimes where DATE(date) = DATE(NOW() ) + INTERVAL 5 DAY ";
+                                        SQL = "select * from paramatta_prayertimes where DATE(date) = DATE(NOW() ) + INTERVAL 2 DAY ";
                                         rs = c.createStatement().executeQuery(SQL);
                                         while (rs.next()) 
                                         {
                                             future_prayer_date =            rs.getDate("date");
                                             future_fajr_jamaat_time =       rs.getTime("fajr_jamaat");
                                             future_asr_jamaat_time =        rs.getTime("asr_jamaat");
+                                            future_maghrib_jamaat_time =       rs.getTime("maghrib_jamaat");
                                             future_isha_jamaat_time =       rs.getTime("isha_jamaat");             
                                         }
                                         c.close();
 
                                         // print the results
-                                        System.out.format("%s,%s,%s,%s \n", future_prayer_date, future_fajr_jamaat_time, future_asr_jamaat_time, future_isha_jamaat_time );
+                                        System.out.format("%s,%s,%s,%s,%s \n", future_prayer_date, future_fajr_jamaat_time, future_asr_jamaat_time, future_maghrib_jamaat_time, future_isha_jamaat_time );
 
 
                                     if (!fajr_jamaat_time.equals(future_fajr_jamaat_time))
@@ -1023,6 +1057,8 @@ import org.joda.time.format.DateTimeFormatter;
                                         ps.executeUpdate(); 
                                         c.close();
                                     }
+                                    
+                                   
 
 
                                     if (!asr_jamaat_time.equals(future_asr_jamaat_time) )
@@ -1041,6 +1077,22 @@ import org.joda.time.format.DateTimeFormatter;
                                         notification = true;
                                     }
 
+                                    if (!maghrib_jamaat_time.equals(future_maghrib_jamaat_time) )
+                                    {
+                                        System.out.println("maghrib Prayer Time Difference" );
+                                        maghrib_jamma_time_change =true;
+                                        if(!notification)
+                                        {
+                                            java.sql.Date sqlDate = new java.sql.Date(future_prayer_date.getTime());
+                                            c = DBConnect.connect();
+                                            PreparedStatement ps = c.prepareStatement("INSERT INTO prayertime.notification (notification_Date) VALUE (?)");  
+                                            ps.setDate(1, sqlDate);  
+                                            ps.executeUpdate(); 
+                                            c.close();
+                                        }
+                                        notification = true;
+                                    }
+                                    
 
                                     if (!isha_jamaat_time.equals(future_isha_jamaat_time) )
                                     {
@@ -1380,8 +1432,8 @@ import org.joda.time.format.DateTimeFormatter;
                             
                             if(Calendar_now.compareTo(nextTransitionCal)==0 )
                             {
-                                if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){future_zuhr_jamaat_time = "12:30";}
-                                else{future_zuhr_jamaat_time = "13:30";}  
+                                if (TimeZone.getTimeZone( timeZone_ID).inDaylightTime( time )){future_zuhr_jamaat_time = "12:15";}
+                                else{future_zuhr_jamaat_time = "13:15";}  
                                 en_notification_Msg = en_notification_Msg + "Duhr & Friday: " + future_zuhr_jamaat_time +"    ";
                                 ar_notification_Msg = ar_notification_Msg + "الظهر و الجمعة: " + future_zuhr_jamaat_time +"    ";
                             }
@@ -1393,6 +1445,16 @@ import org.joda.time.format.DateTimeFormatter;
                                 en_notification_Msg = en_notification_Msg + "Asr: " + future_asr_jamaat_time_mod +"    ";
                                 ar_notification_Msg = ar_notification_Msg + "العصر: " + future_asr_jamaat_time_mod +"    ";
                                 asr_jamma_time_change = false;
+                            }
+                            
+                            
+                            if (maghrib_jamma_time_change )
+                            {
+                                String future_maghrib_jamaat_time_mod = DATE_FORMAT.format(future_maghrib_jamaat_time);
+//                                Date future_maghrib_jamaat_time_mod = new SimpleDateFormat("HH:mm").parse("Fajr time: " + future_maghrib_jamaat_time);
+                                en_notification_Msg = en_notification_Msg + "Maghrib: " + future_maghrib_jamaat_time_mod;
+                                ar_notification_Msg = ar_notification_Msg + "المغرب: " + future_maghrib_jamaat_time_mod;
+                                maghrib_jamma_time_change = false;
                             }
                             
                             if (isha_jamma_time_change )
@@ -1726,12 +1788,31 @@ import org.joda.time.format.DateTimeFormatter;
             @Override public void handle(long now) {
                 if (now > clock_update_lastTimerCall + 1000_000_000l) 
                 {
-                    try {update_clock();} 
+                    try {play_athan();} 
                     catch (Exception e) {logger.warn("Unexpected error", e);}
                     clock_update_lastTimerCall = now;
                 }
             }
         };      
+        
+        hour_Label.textProperty().bind(hour);
+        minute_Label.textProperty().bind(minute);
+        second_Label.textProperty().bind(second);
+        date_Label.textProperty().bind(date);
+
+        Timeline clock = new Timeline(
+        new KeyFrame(Duration.seconds(0), evt -> {
+        LocalTime now = LocalTime.now();
+        hour.set(new SimpleDateFormat("h").format(new Date()));       
+        minute.set(String.format("%02d", now.getMinute()));            
+        second.set(String.format("%d", now.getSecond())); 
+        date.set(new SimpleDateFormat("EEEE, d MMMM").format(Calendar_now.getTime()));
+        
+        }),
+        new KeyFrame(Duration.seconds(1))
+        );
+        clock.setCycleCount(Animation.INDEFINITE);
+        clock.play();
         
         
 // Timer to change friday prayer label====================================================
@@ -1994,6 +2075,52 @@ import org.joda.time.format.DateTimeFormatter;
                             catch (IOException e) {logger.warn("Unexpected error", e);}
                             
                         }
+                        
+                        
+                        else if(received.equals("refresh background")) 
+                        {
+                            
+                            try
+                            {
+                            System.out.println("Changing Background...");
+                            images = new ArrayList<String>();
+                            //change on osx
+                            if (platform.equals("osx"))
+                    //        {directory = new File("/Users/ossama/Projects/Pi/javafx/prayertime/background/");} 
+                            {directory = new File("/Users/ossama/Dropbox/Projects/Pi/javafx/prayertime/background");}
+                    //        {directory = new File("/Users/samia/NetBeansProjects/prayertime_files/background/");}
+                            //change on Pi
+                            if (platform.equals("pi"))
+                            {directory = new File("/home/pi/prayertime/Images/");}
+
+                            files = directory.listFiles();
+                            for(File f : files) 
+                            {
+                                images.add(f.getName());
+                            }   
+                            System.out.println(images);
+                            countImages = images.size();
+                            imageNumber = (int) (Math.random() * countImages);
+                            rand_Image_Path = directory + "/"+ images.get(imageNumber);
+                            System.out.println(rand_Image_Path);
+                            String image = new File(rand_Image_Path).toURI().toURL().toString();
+                            
+                            
+                            
+                            
+                            Platform.runLater(new Runnable() {
+                        @Override public void run() 
+                        {
+                                Mainpane.setStyle("-fx-background-image: url('" + image + "'); -fx-background-image-repeat: repeat; -fx-background-size: 1080 1920;-fx-background-position: bottom left;");  
+                       
+ 
+                        }
+                    });     }
+                            catch (IOException e) {logger.warn("Unexpected error", e);}
+                            
+                
+                        }
+                        
                         
                         else if(received.equals("refresh hadith")) 
                         {
@@ -2315,6 +2442,8 @@ import org.joda.time.format.DateTimeFormatter;
         Mainpane.setId("Mainpane");
         prayertime_pane = prayertime_pane();    
         Moonpane =   moonpane();
+        Sunrisepane =   sunrise();
+        Sunrisepane.setVisible(false);
         hadithPane = hadithPane();
         clockPane =   clockPane();
         GridPane footerPane =   footerPane();
@@ -2328,13 +2457,15 @@ import org.joda.time.format.DateTimeFormatter;
 
 //        clock.setEffect(ds);
         Moonpane.setEffect(ds);
+        Sunrisepane.setEffect(ds);
         prayertime_pane.setEffect(ds);
         hadithPane.setEffect(ds);
         clockPane.setEffect(ds);
 //        footerPane.setEffect(ds);
   //============================================
-        Mainpane.add(clockPane, 1, 1);
+        Mainpane.add(clockPane, 1, 1,5,1);
         Mainpane.add(Moonpane, 7, 1);
+        Mainpane.add(Sunrisepane, 7, 1);
         Mainpane.add(prayertime_pane, 1, 5,11,7);  
         Mainpane.add(hadithPane, 1, 15,11,13);
         prayertime_pane.setTranslateY(30);
@@ -2479,29 +2610,29 @@ public static void main(String[] args) {
 //
 //}
         
-public void update_clock() throws Exception{  
+public void play_athan() throws Exception{  
     
     
         DateTime_now = new DateTime();    
         Calendar_now = Calendar.getInstance();
         Calendar_now.setTime(new Date());
         date_now = new Date();
-//        Calendar_now.set(Calendar.MILLISECOND, 0);
-//        Calendar_now.set(Calendar.SECOND, 0);
+        Calendar_now.set(Calendar.MILLISECOND, 0);
+        Calendar_now.set(Calendar.SECOND, 0);
         
-        hour_in_hour_Label = new SimpleDateFormat("hh").format(Calendar_now.getTime());
-        minute_in_minute_Label = new SimpleDateFormat(":mm").format(Calendar_now.getTime());
-        clock_minute = Calendar_now.get(Calendar.MINUTE);
-        
-        if(clock_minute != old_clock_minute)
-        {
-            old_clock_minute = clock_minute;
-            hour_Label.setText(hour_in_hour_Label);
-            minute_Label.setText(minute_in_minute_Label);
-            date = new SimpleDateFormat("EEEE, d MMMM").format(Calendar_now.getTime());
-            date_Label.setText(date);
-            
-        }
+//        hour_in_hour_Label = new SimpleDateFormat("hh").format(Calendar_now.getTime());
+//        minute_in_minute_Label = new SimpleDateFormat(":mm").format(Calendar_now.getTime());
+//        clock_minute = Calendar_now.get(Calendar.MINUTE);
+//        
+//        if(clock_minute != old_clock_minute)
+//        {
+//            old_clock_minute = clock_minute;
+//            hour_Label.setText(hour_in_hour_Label);
+//            minute_Label.setText(minute_in_minute_Label);
+//            date = new SimpleDateFormat("EEEE, d MMMM").format(Calendar_now.getTime());
+//            date_Label.setText(date);
+//            
+//        }
         
 //       SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
 //	String dateInString = "21-07-2014 22:05:56";
@@ -2623,6 +2754,9 @@ public void update_clock() throws Exception{
         
         if (duha_cal.equals(Calendar_now) && duha_athan_enable) 
         {
+            Moonpane.setVisible(true);
+            Sunrisepane.setVisible(false);
+            
             duha_athan_enable = false;
             System.out.println("Duha Time");
 //            String image = JavaFXApplication4.class.getResource("/Images/sunrise.png").toExternalForm();
@@ -2638,6 +2772,9 @@ public void update_clock() throws Exception{
 
         else if (fajr_cal.equals(Calendar_now) && fajr_athan_enable) 
         {
+            Moonpane.setVisible(false);
+            Sunrisepane.setVisible(true);
+            
             fajr_prayer_In_Progress_notification = true;
             fajr_athan_enable = false;
             System.out.println("fajr Time");
@@ -2758,6 +2895,20 @@ public void update_labels() throws Exception{
             isha_Label_ar.setVisible(false);
             isha_Label_eng.setVisible(true);
                                 
+            Sunrise_Date_Label.setId("sunrise-text-english");
+            Sunrise_Date_Label.setWrapText(true);
+            Sunrisepane.setHalignment(Sunrise_Date_Label,HPos.LEFT);
+            Sunrise_Date_Label.setText("Sunrise time:  " + String.format("%d", sunrise_time.getHours()) +  ":" + String.format("%02d", sunrise_time.getMinutes()));
+////            System.out.println("sunrise time: " + String.format("%d", sunrise_time.getHours()) +  ":" + String.format("%02d", sunrise_time.getMinutes()));
+            
+            
+//            Sunrise_Date_Label.setId("sunrise-text-arabic");
+//            Sunrise_Date_Label.setWrapText(true);
+//            Sunrisepane.setHalignment(Sunrise_Date_Label,HPos.RIGHT);
+//            Sunrise_Date_Label.setText("وقت الشروق: " + "\n" + String.format("%d", sunrise_time.getHours()) +  ":" + String.format("%02d", sunrise_time.getMinutes()));
+//            System.out.println("sunrise time: " + String.format("%d", sunrise_time.getHours()) +  ":" + String.format("%02d", sunrise_time.getMinutes()));
+
+            
             if (hadith_Label_visible)
             {
                 hadith_Label.setVisible(true);
@@ -3048,6 +3199,13 @@ public void update_labels() throws Exception{
             maghrib_Label_eng.setVisible(false);
             isha_Label_ar.setVisible(true);
             isha_Label_eng.setVisible(false);
+            
+            Sunrise_Date_Label.setId("sunrise-text-arabic");
+            Sunrise_Date_Label.setWrapText(true);
+            Sunrisepane.setHalignment(Sunrise_Date_Label,HPos.RIGHT);
+            Sunrise_Date_Label.setText("وقت الشروق: " + "\n" + String.format("%d", sunrise_time.getHours()) +  ":" + String.format("%02d", sunrise_time.getMinutes()));
+//            System.out.println("sunrise time: " + String.format("%d", sunrise_time.getHours()) +  ":" + String.format("%02d", sunrise_time.getMinutes()));
+
             
             hadithPane.setHalignment(athan_Change_Label_L1,HPos.RIGHT);
             
@@ -4347,6 +4505,36 @@ public void update_labels() throws Exception{
         return Moonpane;
     }
     
+        //===SUN RISE PANE==========================  
+    public GridPane sunrise() {
+      
+        GridPane Sunrise = new GridPane();
+        Sunrise.setId("moonpane");
+        Sunrise.getColumnConstraints().setAll(
+                ColumnConstraintsBuilder.create().prefWidth(220).minWidth(220).build(),
+                ColumnConstraintsBuilder.create().prefWidth(100).minWidth(100).build()     
+        );
+        Sunrise.setHgap(40);
+        Sunrise.setMaxHeight(50);
+//       Moonpane.setGridLinesVisible(false);
+
+        ImageView Sunrise_img = new ImageView(new Image(getClass().getResourceAsStream("/Images/Sun/Sun.png")));      
+        Sunrise_img.setFitWidth(160);
+        Sunrise_img.setFitHeight(160);
+//        Moon_img.setPreserveRatio(false);
+        Sunrise_img.setSmooth(true);
+        Sunrise_Image_Label.setGraphic(Sunrise_img);
+        Sunrise.setConstraints(Sunrise_Image_Label, 1, 0);
+        Sunrise.getChildren().add(Sunrise_Image_Label); 
+        Sunrise_Date_Label.setId("sunrise-text-english");
+        Sunrise_Date_Label.setWrapText(true);
+        Sunrise_Date_Label.setText("Loading......");
+        Sunrise.setConstraints(Sunrise_Date_Label, 0, 0);
+        Sunrise.getChildren().add(Sunrise_Date_Label);
+
+        return Sunrise;
+    }
+    
     //===MOON PANE==========================  
     public GridPane hadithPane() {
       
@@ -4488,29 +4676,46 @@ public void update_labels() throws Exception{
 
         
         clockPane.getColumnConstraints().setAll(
-                ColumnConstraintsBuilder.create().minWidth(150).build(),
-                ColumnConstraintsBuilder.create().minWidth(150).build()     
+                ColumnConstraintsBuilder.create().minWidth(10).maxWidth(50).build(),
+                ColumnConstraintsBuilder.create().minWidth(120).maxWidth(300).build(),
+                ColumnConstraintsBuilder.create().minWidth(40).maxWidth(50).build(),
+                ColumnConstraintsBuilder.create().minWidth(120).maxWidth(160).build(),
+                ColumnConstraintsBuilder.create().minWidth(70).maxWidth(150).build()    
         );
         
         clockPane.setHgap(0);
-        clockPane.setGridLinesVisible(false);
+//        clockPane.setGridLinesVisible(true);
 //        clockPane.setMaxHeight(50);
         
         
         hour_Label.setId("hour");  
-        clockPane.setHalignment(hour_Label,HPos.CENTER);
-        clockPane.setConstraints(hour_Label, 0, 0);
+        clockPane.setHalignment(hour_Label,HPos.RIGHT);
+        clockPane.setConstraints(hour_Label, 1, 0);
         clockPane.getChildren().add(hour_Label);
         
+        separator_Label.setText(":");
+        separator_Label.setId("clock_separator");  
+        clockPane.setHalignment(separator_Label,HPos.CENTER);
+        clockPane.setConstraints(separator_Label, 2, 0);
+        clockPane.getChildren().add(separator_Label);
+        
         minute_Label.setId("minute");  
-        clockPane.setHalignment(minute_Label,HPos.LEFT);
+        clockPane.setHalignment(minute_Label,HPos.CENTER);
         clockPane.setValignment(minute_Label,VPos.CENTER);
-        clockPane.setConstraints(minute_Label, 1, 0);
+        clockPane.setConstraints(minute_Label, 3, 0);
         clockPane.getChildren().add(minute_Label);
+        
+
+        
+        second_Label.setId("second");  
+        clockPane.setHalignment(second_Label,HPos.CENTER);
+        clockPane.setValignment(second_Label,VPos.CENTER);
+        clockPane.setConstraints(second_Label, 4, 0);
+        clockPane.getChildren().add(second_Label);
         
         date_Label.setId("date");
         clockPane.setHalignment(date_Label,HPos.CENTER);
-        clockPane.setConstraints(date_Label, 0, 1,2,1);
+        clockPane.setConstraints(date_Label, 0, 1,5,1);
         clockPane.getChildren().add(date_Label);
         return clockPane;
     }
